@@ -65,7 +65,7 @@ jobs:
       - name: Check if version exists on npm
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if npm view @sachintha00/pgshift@$VERSION version >/dev/null 2>&1; then
+          if npm view @diaryofthedev/pgshift@$VERSION version >/dev/null 2>&1; then
             echo "Version $VERSION already exists on npm. Skipping publish."
             exit 0
           fi
@@ -76,6 +76,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: |
+          echo "Publishing @diaryofthedev/pgshift@$NEW_VERSION to npm"
+          npm publish --access public || {
+            echo "Publish failed. Check NPM_TOKEN permissions for @diaryofthedev scope.";
+            exit 1;
+          }
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NEW_VERSION: ${{ env.NEW_VERSION }}

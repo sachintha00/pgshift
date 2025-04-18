@@ -1,5 +1,5 @@
 {
-  "name": "@sachintha00/pgshift",
+  "name": "@diaryofthedev/pgshift",
   "version": "1.0.0",
   "description": "A fast, secure PostgreSQL migration and seeder engine for Node.js",
   "main": "dist/index.js",
