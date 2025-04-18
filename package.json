@@ -1,12 +1,12 @@
 {
-  "name": "pgshift",
+  "name": "@sachintha00/pgshift",
   "version": "1.0.0",
   "description": "A fast, secure PostgreSQL migration and seeder engine for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pgshift": "bin/pgshift.js",
-    "pgshift-seed": "dist/cli/seed.js"
+    "pgshift": "./bin/pgshift.js",
+    "pgshift-seed": "./dist/cli/seed.js"
   },
   "scripts": {
     "build": "tsc",
@@ -36,5 +36,11 @@
     "seeder",
     "node.js",
     "typescript"
+  ],
+  "files": [
+    "dist/",
+    "bin/",
+    "README.md",
+    "LICENSE"
   ]
 }
