@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pgshift": "./bin/pgshift.js",
-    "pgshift-seed": "./dist/cli/seed.js"
+    "pgshift": "bin/pgshift.js",
+    "pgshift-seed": "dist/cli/seed.js"
   },
   "scripts": {
     "build": "tsc",
@@ -28,7 +28,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sachintha00/pgshift.git"
+    "url": "git+https://github.com/sachintha00/pgshift.git"
   },
   "keywords": [
     "postgresql",
