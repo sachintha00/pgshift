@@ -46,30 +46,36 @@ jobs:
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          npm version ${{ steps.version_bump.outputs.VERSION_TYPE }} --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to $VERSION"
-          git tag v$VERSION
-          git push origin master
-          git push origin v$VERSION
+          NEW_VERSION=$(npm version ${{ steps.version_bump.outputs.VERSION_TYPE }} --no-git-tag-version)
+          if [ "$VERSION" != "$NEW_VERSION" ]; then
+            git add package.json package-lock.json
+            git commit -m "chore: bump version to $NEW_VERSION"
+          fi
+          if git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; then
+            echo "Tag v$NEW_VERSION already exists, skipping tag creation."
+          else
+            git tag v$NEW_VERSION
+            git push origin master
+            git push origin v$NEW_VERSION
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if version exists on npm
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if npm view pgshift@$VERSION version >/dev/null 2>&1; then
+          if npm view @sachintha00/pgshift@$VERSION version >/dev/null 2>&1; then
             echo "Version $VERSION already exists on npm. Skipping publish."
             exit 0
           fi
 
       - name: Dry run publish
-        run: npm publish --dry-run
+        run: npm publish --dry-run --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
