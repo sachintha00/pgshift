@@ -1,0 +1,70 @@
+name: Build, Bump Version, Tag, and Publish to npm
+
+on:
+  push:
+    branches:
+      - master # Triggers on push to master
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for git commands
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Matches @types/node version
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Determine version bump
+        id: version_bump
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MESSAGE" | grep -q "bump:major"; then
+            echo "VERSION_TYPE=major" >> $GITHUB_OUTPUT
+          elif echo "$COMMIT_MESSAGE" | grep -q "bump:minor"; then
+            echo "VERSION_TYPE=minor" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION_TYPE=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version and create tag
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          npm version ${{ steps.version_bump.outputs.VERSION_TYPE }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $VERSION"
+          git tag v$VERSION
+          git push origin main
+          git push origin v$VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if version exists on npm
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view pgshift@$VERSION version >/dev/null 2>&1; then
+            echo "Version $VERSION already exists on npm. Skipping publish."
+            exit 0
+          fi
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
